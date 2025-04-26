@@ -31,5 +31,15 @@ return [
                 'limit' => 500,
             ],
         ],
+        'orders' => [
+            'url' => env('API_HOST_URL') . '/api/orders',
+            'params' => [
+                'dateFrom' => '2024-01-01',
+                'dateTo' => '2026-01-01',
+                'key' => env('API_KEY'),
+                'page' => 1,
+                'limit' => 500,
+            ],
+        ]
     ]
 ];

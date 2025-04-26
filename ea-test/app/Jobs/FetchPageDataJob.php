@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Console\Commands\FetchDataFromApiCommand;
 use App\Models\Incomes;
+use App\Models\Orders;
 use App\Models\Sales;
 use App\Models\Stock;
 use Illuminate\Bus\Queueable;
@@ -71,6 +72,11 @@ class FetchPageDataJob implements ShouldQueue
         if ($name == 'sales') {
             foreach ($data as $item) {
                 Sales::updateOrCreate($item);
+            }
+        }
+        if ($name == 'orders') {
+            foreach ($data as $item) {
+                Orders::updateOrCreate($item);
             }
         }
     }
