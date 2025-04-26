@@ -50,12 +50,12 @@ class FetchDataFromApiCommand extends Command
                 $params['page'] = $page;
 
                 // Добавим задержку, чтобы достигнуть лимита у API
-                $delaySeconds = $page * 2;
+//                $delaySeconds = $page * 2;
 
                 FetchPageDataJob::dispatch($name, [
                     'url' => $endpoint['url'],
                     'params' => $params,
-                ])->delay(now()->addSeconds($delaySeconds));
+                ]);
                 $this->info("Dispatched job for {$name}, page {$page}");
             }
         }

@@ -8,7 +8,7 @@ return [
                 'dateFrom' => now()->format('Y-m-d'),
                 'key' => env('API_KEY'),
                 'page' => 1,
-                'limit' => 500,
+                'limit' => 100,
             ],
         ],
         'incomes' => [
@@ -18,7 +18,7 @@ return [
                 'dateTo' => '2026-01-01',
                 'key' => env('API_KEY'),
                 'page' => 1,
-                'limit' => 500,
+                'limit' => 100,
             ],
         ],
         'sales' => [
@@ -28,7 +28,7 @@ return [
                 'dateTo' => '2026-01-01',
                 'key' => env('API_KEY'),
                 'page' => 1,
-                'limit' => 500,
+                'limit' => 100,
             ],
         ],
         'orders' => [
@@ -38,7 +38,7 @@ return [
                 'dateTo' => '2026-01-01',
                 'key' => env('API_KEY'),
                 'page' => 1,
-                'limit' => 500,
+                'limit' => 100,
             ],
         ]
     ]

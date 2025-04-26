@@ -10,6 +10,7 @@ use App\Models\Stock;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
@@ -31,10 +32,20 @@ class FetchPageDataJob implements ShouldQueue
     {
         try {
             $page = $this->endpoint['params']['page'] ?? 1;
+            $maxRetries = 5;
+            $attempt = 0;
 
-            $response = Http::retry(3, 1000)
-                ->timeout(60)
-                ->get($this->endpoint['url'], $this->endpoint['params']);
+            $response = $this->sendRequest();
+
+            while ($response->status() == 429 && $attempt < $maxRetries) {
+                $retryAfter = (int) $response->header('Retry-After', 1); // по умолчанию 1 сек
+                \Log::warning("Server returned 429. Retrying after {$retryAfter} seconds... Attempt {$attempt}");
+
+                sleep($retryAfter);
+
+                $response = $this->sendRequest();
+                $attempt++;
+            }
 
             if ($response->successful()) {
                 $data = $response->json()['data'] ?? [];
@@ -43,17 +54,18 @@ class FetchPageDataJob implements ShouldQueue
                     \Log::warning("No data returned for {$this->name}, page: {$page}");
                     return;
                 }
+
                 $this->processData($data, $this->name);
                 \Log::info("Processed {$this->name}, page: {$page}, items: " . count($data));
             } else {
-                // Делаем копию джобы на случай, если запрос не прошел из-за лимита на кол-во запросов
                 $this->logAndRetry("API request failed", $response->status());
             }
 
         } catch (\Throwable $e) {
             \Log::error("Exception in job for {$this->name}, page: {$this->endpoint['params']['page']} - " . $e->getMessage());
-            // Делаем копию джобы на случай, если запрос не прошел из-за лимита на кол-во запросов
-            self::dispatch($this->name, $this->endpoint)->delay(now()->addSeconds(60));
+
+            // Повторный запуск через небольшую задержку
+            self::dispatch($this->name, $this->endpoint)->delay(now()->addMinutes(1));
         }
     }
 
@@ -88,6 +100,20 @@ class FetchPageDataJob implements ShouldQueue
         \Log::error("{$message} for {$this->name}, page: {$page}. Status code: {$statusCode}");
 
         // Повтор через 1 минуту
-        self::dispatch($this->name, $this->endpoint)->delay(now()->addSeconds(60));
+        self::dispatch($this->name, $this->endpoint);
+    }
+
+    /**
+     * @throws ConnectionException
+     */
+    private function sendRequest(int $retry_after_sec = 0): \GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
+    {
+        $request = Http::timeout(5);
+
+        if ($retry_after_sec !== 0) {
+            $request = $request->retry(1, $retry_after_sec * 1000);
+        }
+
+        return $request->get($this->endpoint['url'], $this->endpoint['params']);
     }
 }
