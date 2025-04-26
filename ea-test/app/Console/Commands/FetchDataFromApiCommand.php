@@ -56,7 +56,6 @@ class FetchDataFromApiCommand extends Command
                     'url' => $endpoint['url'],
                     'params' => $params,
                 ])->delay(now()->addSeconds($delaySeconds));
-
                 $this->info("Dispatched job for {$name}, page {$page}");
             }
         }

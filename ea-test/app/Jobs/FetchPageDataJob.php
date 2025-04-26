@@ -9,7 +9,6 @@ use App\Models\Stock;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
@@ -30,7 +29,7 @@ class FetchPageDataJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $page = $this->endpoint['params']['page'] ?? 'unknown';
+            $page = $this->endpoint['params']['page'] ?? 1;
 
             $response = Http::retry(3, 1000)
                 ->timeout(60)
@@ -43,7 +42,6 @@ class FetchPageDataJob implements ShouldQueue
                     \Log::warning("No data returned for {$this->name}, page: {$page}");
                     return;
                 }
-
                 $this->processData($data, $this->name);
                 \Log::info("Processed {$this->name}, page: {$page}, items: " . count($data));
             } else {
@@ -60,23 +58,21 @@ class FetchPageDataJob implements ShouldQueue
 
     private function processData(array $data, string $name): void
     {
-        match ($name) {
-            'stocks' => function () use ($data) {
-                foreach ($data as $item) {
-                    Stock::updateOrInsert($item);
-                }
-            },
-            'incomes' => function () use ($data) {
-                foreach ($data as $item) {
-                    Stock::updateOrInsert($item);
-                }
-            },
-            'sales' => function () use ($data) {
-                foreach ($data as $item) {
-                    Stock::updateOrInsert($item);
-                }
-            },
-        };
+        if ($name == 'stocks') {
+            foreach ($data as $item) {
+                Stock::updateOrCreate($item);
+            }
+        }
+        if ($name == 'incomes') {
+            foreach ($data as $item) {
+                Incomes::updateOrCreate($item);
+            }
+        }
+        if ($name == 'sales') {
+            foreach ($data as $item) {
+                Sales::updateOrCreate($item);
+            }
+        }
     }
 
     private function logAndRetry(string $message, int $statusCode): void
