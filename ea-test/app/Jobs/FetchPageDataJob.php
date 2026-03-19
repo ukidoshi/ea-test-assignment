@@ -63,9 +63,6 @@ class FetchPageDataJob implements ShouldQueue
 
         } catch (\Throwable $e) {
             \Log::error("Exception in job for {$this->name}, page: {$this->endpoint['params']['page']} - " . $e->getMessage());
-
-            // Повторный запуск через небольшую задержку
-            self::dispatch($this->name, $this->endpoint)->delay(now()->addMinutes(1));
         }
     }
 
