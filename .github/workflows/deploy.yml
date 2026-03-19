@@ -1,4 +1,4 @@
-name: Laravel Deploy with Rsync
+name: Laravel Deploy (Shared Hosting)
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Настраиваем PHP локально (для проверки composer)
+      # 2. Настраиваем PHP 8.2 с расширениями для Composer
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -22,12 +22,12 @@ jobs:
           extensions: mbstring, bcmath, pdo, mysql
           ini-values: post_max_size=256M, upload_max_filesize=256M
 
-      # 3. Локально собираем composer
+      # 3. Локальная установка зависимостей (необязательно)
       - name: Install Composer dependencies locally
         working-directory: ./ea-test
-        run: composer install --no-dev --prefer-dist --optimize-autoloader
+        run: composer install --no-dev --prefer-dist --ignore-platform-req=ext-http
 
-      # 4. Синхронизируем проект на сервер через rsync
+      # 4. Синхронизация проекта на сервер
       - name: Sync project to server
         env:
           RSYNC_RSH: "ssh -i ${{ secrets.SERVER_SSH_KEY }} -p ${{ secrets.SERVER_SSH_PORT }}"
@@ -37,7 +37,9 @@ jobs:
             --exclude='vendor' \
             --exclude='.github' \
             --exclude='node_modules' \
-            ./ea-test/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/u3412095/data/www/test.ukidoshi.store/ea-test/
+            --exclude='.env' \
+            --exclude='storage' \
+            ./ea-test/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/u3412095/data/www/test.ukidoshi.store/ea-test
 
       # 5. Выполняем команды на сервере через SSH
       - name: Run server commands
@@ -49,15 +51,12 @@ jobs:
           port: ${{ secrets.SERVER_SSH_PORT }}
           script: |
             cd /var/www/u3412095/data/www/test.ukidoshi.store/ea-test
-            # Устанавливаем composer зависимости на сервере
-            composer install --no-dev --optimize-autoloader
 
-            # Миграции и кэширование
+            # Composer install с игнорированием ext-http
+            composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-http
+
+            # Миграции и кэширование Laravel
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-
-            # Перезапуск PHP-FPM и Nginx
-            sudo systemctl restart php8.1-fpm
-            sudo systemctl reload nginx
