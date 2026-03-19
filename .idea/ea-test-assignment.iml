@@ -67,7 +67,6 @@
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/psr/log" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/psr/simple-cache" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/psy/psysh" />
-      <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/queueworker/sansdaemon" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/ralouphie/getallheaders" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/ramsey/collection" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/ramsey/uuid" />
@@ -106,6 +105,8 @@
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/polyfill-mbstring" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/polyfill-php80" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/polyfill-php83" />
+      <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/polyfill-php84" />
+      <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/polyfill-php85" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/polyfill-uuid" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/process" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/symfony/psr-http-message-bridge" />
@@ -121,7 +122,6 @@
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/tijsverkoyen/css-to-inline-styles" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/voku/portable-ascii" />
-      <excludeFolder url="file://$MODULE_DIR$/ea-test/vendor/webmozart/assert" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
