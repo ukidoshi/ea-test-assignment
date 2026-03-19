@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Получаем код из репозитория
+      # 1. Получаем код репозитория в Actions
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Настраиваем PHP 8.2 с расширениями для Composer
+      # 2. Настройка PHP 8.2 для Composer
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -22,37 +22,27 @@ jobs:
           extensions: mbstring, bcmath, pdo, mysql
           ini-values: post_max_size=256M, upload_max_filesize=256M
 
-      # 3. Локальная установка зависимостей (необязательно)
+      # 3. Локальный composer install (для проверки зависимостей)
       - name: Install Composer dependencies locally
         working-directory: ./ea-test
         run: composer install --no-dev --prefer-dist --ignore-platform-req=ext-http
 
-      # 4. Синхронизация проекта на сервер
-      - name: Sync project to server
-        env:
-          RSYNC_RSH: "ssh -i ${{ secrets.SERVER_SSH_KEY }} -p ${{ secrets.SERVER_SSH_PORT }}"
-        run: |
-          rsync -avz --delete \
-            --exclude='.git' \
-            --exclude='vendor' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='.env' \
-            --exclude='storage' \
-            ./ea-test/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/u3412095/data/www/test.ukidoshi.store/ea-test
-
-      # 5. Выполняем команды на сервере через SSH
-      - name: Run server commands
+      # 4. SSH Deploy на сервер
+      - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          key: ${{ secrets.SERVER_SSH_KEY }}   # приватный ключ, полностью текст в секретах
           port: ${{ secrets.SERVER_SSH_PORT }}
           script: |
             cd /var/www/u3412095/data/www/test.ukidoshi.store/ea-test
 
-            # Composer install с игнорированием ext-http
+            # Обновляем код через git pull
+            git fetch --all
+            git reset --hard origin/main
+
+            # Устанавливаем зависимости через Composer
             composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-http
 
             # Миграции и кэширование Laravel
